@@ -4,23 +4,34 @@ import FloatingHearts from "@/components/FloatingHearts";
 import TransitionPetals from "@/components/TransitionPetals";
 import BloomingRoses from "@/components/BloomingRoses";
 import { letterParagraphs } from "@/components/LetterContent";
-import bouquetImage from "@/assets/bouquet.png";
 
 const Index = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [transitionTrigger, setTransitionTrigger] = useState(0);
+  const [direction, setDirection] = useState(1); // 1 for forward, -1 for back
   
   const isLastParagraph = currentIndex === letterParagraphs.length - 1;
+  const isFirstParagraph = currentIndex === 0;
   const currentParagraph = letterParagraphs[currentIndex];
 
-  const handleContinue = useCallback(() => {
+  const handleNext = useCallback(() => {
     if (!isLastParagraph) {
+      setDirection(1);
       setTransitionTrigger((prev) => prev + 1);
       setTimeout(() => {
         setCurrentIndex((prev) => prev + 1);
       }, 200);
     }
   }, [isLastParagraph]);
+
+  const handleBack = useCallback(() => {
+    if (!isFirstParagraph) {
+      setDirection(-1);
+      setTimeout(() => {
+        setCurrentIndex((prev) => prev - 1);
+      }, 200);
+    }
+  }, [isFirstParagraph]);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background">
@@ -29,44 +40,15 @@ const Index = () => {
       
       {isLastParagraph && <BloomingRoses />}
       
-      {/* Grand bouquet on final screen */}
-      <AnimatePresence>
-        {isLastParagraph && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.3, y: 100 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ 
-              duration: 1.5, 
-              delay: 0.5,
-              ease: [0.25, 0.46, 0.45, 0.94]
-            }}
-            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
-          >
-            <motion.img
-              src={bouquetImage}
-              alt="Beautiful bouquet of roses and peonies"
-              className="w-[320px] md:w-[450px] lg:w-[550px] h-auto drop-shadow-2xl"
-              animate={{ 
-                y: [0, -10, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
       <div className="relative z-20 flex min-h-screen items-center justify-center px-6 py-12">
         <div className="max-w-2xl w-full">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentIndex}
-              initial={{ opacity: 0, y: 30 }}
+              custom={direction}
+              initial={{ opacity: 0, y: direction * 30 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
+              exit={{ opacity: 0, y: direction * -30 }}
               transition={{ 
                 duration: 0.8, 
                 ease: [0.25, 0.46, 0.45, 0.94] 
@@ -101,22 +83,33 @@ const Index = () => {
                 {currentParagraph.content}
               </motion.p>
 
-              {/* Button */}
-              {currentParagraph.buttonText && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.8 }}
-                  className="mt-12"
-                >
+              {/* Navigation buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                className="mt-12 flex items-center justify-center gap-6"
+              >
+                {/* Back button */}
+                {!isFirstParagraph && (
                   <button
-                    onClick={handleContinue}
+                    onClick={handleBack}
+                    className="valentine-button opacity-70 hover:opacity-100"
+                  >
+                    Go back
+                  </button>
+                )}
+                
+                {/* Forward button */}
+                {currentParagraph.buttonText && (
+                  <button
+                    onClick={handleNext}
                     className="valentine-button"
                   >
                     {currentParagraph.buttonText}
                   </button>
-                </motion.div>
-              )}
+                )}
+              </motion.div>
 
               {/* Progress indicator */}
               <motion.div
@@ -126,9 +119,16 @@ const Index = () => {
                 className="mt-16 flex justify-center gap-2"
               >
                 {letterParagraphs.map((_, index) => (
-                  <div
+                  <button
                     key={index}
-                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                    onClick={() => {
+                      setDirection(index > currentIndex ? 1 : -1);
+                      if (index > currentIndex) {
+                        setTransitionTrigger((prev) => prev + 1);
+                      }
+                      setTimeout(() => setCurrentIndex(index), 200);
+                    }}
+                    className={`h-1.5 rounded-full transition-all duration-500 cursor-pointer hover:bg-primary/70 ${
                       index === currentIndex
                         ? "w-6 bg-primary"
                         : index < currentIndex
