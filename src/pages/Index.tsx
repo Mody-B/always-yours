@@ -4,6 +4,7 @@ import FloatingHearts from "@/components/FloatingHearts";
 import TransitionPetals from "@/components/TransitionPetals";
 import BloomingRoses from "@/components/BloomingRoses";
 import { letterParagraphs } from "@/components/LetterContent";
+import bouquetImage from "@/assets/bouquet.png";
 
 const Index = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -27,6 +28,36 @@ const Index = () => {
       <TransitionPetals trigger={transitionTrigger} />
       
       {isLastParagraph && <BloomingRoses />}
+      
+      {/* Grand bouquet on final screen */}
+      <AnimatePresence>
+        {isLastParagraph && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.3, y: 100 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ 
+              duration: 1.5, 
+              delay: 0.5,
+              ease: [0.25, 0.46, 0.45, 0.94]
+            }}
+            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
+          >
+            <motion.img
+              src={bouquetImage}
+              alt="Beautiful bouquet of roses and peonies"
+              className="w-[320px] md:w-[450px] lg:w-[550px] h-auto drop-shadow-2xl"
+              animate={{ 
+                y: [0, -10, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <div className="relative z-20 flex min-h-screen items-center justify-center px-6 py-12">
         <div className="max-w-2xl w-full">
